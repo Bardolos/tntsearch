@@ -345,9 +345,20 @@ class TNTIndexer
             $row->forget($this->getPrimaryKey());
         }
 
-        $stems = $row->map(function ($columnContent, $columnName) use ($row) {
-            return $this->stemText($columnContent);
-        });
+
+		$stems = $row->map(function ($columnContent, $columnName) use ($row) {
+			if(! (isset($this->config['disableStemming']) && $this->config['disableStemming']) )
+				return $this->stemText($columnContent);
+			
+			preg_match_all('/([0-9]+|[a-zA-Z]+)/',$columnContent,$matches);
+			return array_map(function($arrTerm) {
+				return strtolower($arrTerm);
+			}, $matches[0]);
+		});
+
+		if(strpos($row->get('name'), 'test') !== false) {}
+		
+		var_dump($stems);
 
         $this->saveToIndex($stems, $documentId);
     }
